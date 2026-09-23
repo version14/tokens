@@ -1,0 +1,36 @@
+name: Dispatch Version 14 token checks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch checks in every theme repository
+        env:
+          GH_TOKEN: ${{ secrets.VERSION14_DISPATCH_TOKEN }}
+          TOKEN_REVISION: ${{ github.sha }}
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::warning title=Automatic theme rerun disabled::Set VERSION14_DISPATCH_TOKEN on version14/tokens to rerun theme checks after token updates."
+            exit 0
+          fi
+
+          failed=0
+          for repo in atuin-theme gh-dash-theme ghostty-theme helix-theme nvim-theme starship-theme vim-theme vscode-theme zed-theme; do
+            echo "Dispatching version14-tokens-updated to version14/$repo"
+            if ! gh api --method POST \
+              "/repos/version14/$repo/dispatches" \
+              -f event_type=version14-tokens-updated \
+              -f "client_payload[revision]=$TOKEN_REVISION"; then
+              echo "::error title=Theme check dispatch failed::Could not dispatch the token update to version14/$repo."
+              failed=1
+            fi
+          done
+          exit "$failed"

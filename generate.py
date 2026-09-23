@@ -291,10 +291,30 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="verify generated files (the default)")
     parser.add_argument("--write", action="store_true")
     args = parser.parse_args()
-    failures = process(args.themes_root.resolve(), args.write)
+    try:
+        failures = process(args.themes_root.resolve(), args.write)
+    except ValueError as exc:
+        print(f"Version 14 token check failed: {exc}", file=sys.stderr)
+        print(
+            "Fix the override comment so it names an assignment in the same file, "
+            "or remove the override.",
+            file=sys.stderr,
+        )
+        return 1
     if failures and not args.write:
-        print("Out-of-date generated files:")
-        print("\n".join(f"  {path}" for path in failures))
+        print("Version 14 token check failed: generated files are out of date.", file=sys.stderr)
+        print("Files that differ from version14/tokens:", file=sys.stderr)
+        for path in failures:
+            print(f"  - {path}", file=sys.stderr)
+            print(
+                f"::error title=Stale Version 14 theme file::{path} is out of date; "
+                "run 'python tokens/generate.py --themes-root repos --write' and commit the result",
+                file=sys.stderr,
+            )
+        print(
+            "Regenerate locally with: python tokens/generate.py --themes-root repos --write",
+            file=sys.stderr,
+        )
         return 1
     print(f"{'Generated' if args.write else 'Verified'} {len(failures) if args.write else 'supported'} theme files.")
     return 0
