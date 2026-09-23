@@ -21,6 +21,13 @@ UI colors. Those values are represented in the native theme implementations
 because they depend on each tool's rendering model; the shared semantic
 foreground, background, accent, syntax, and ANSI colors come from this file.
 
+## Theme repository template
+
+The reusable CI workflow is available at
+templates/theme-repository/.github/workflows/check-tokens.yml.
+It checks out the current token source, runs the generator in verification mode,
+and runs on pushes, pull requests, manual dispatches, and weekly.
+
 ## Variants
 
 - `dark`: the standard deep-neutral theme
