@@ -220,10 +220,14 @@ def process(themes_root: Path, write: bool) -> list[str]:
     outputs: dict[Path, str] = {}
 
     for variant, name in (("dark", "version14"), ("black", "version14-black"), ("light", "version14-light")):
-        outputs[themes_root / "atuin-theme" / f"{name}.toml"] = render_atuin(name, palettes[variant])
-        outputs[themes_root / "gh-dash-theme" / f"{name}.yml"] = render_gh_dash(palettes[variant])
-        outputs[themes_root / "starship-theme" / f"{name}.toml"] = render_starship(name, palettes[variant])
-        outputs[themes_root / "ghostty-theme" / name] = render_ghostty(palettes[variant], variant == "light")
+        if (themes_root / "atuin-theme").exists():
+            outputs[themes_root / "atuin-theme" / f"{name}.toml"] = render_atuin(name, palettes[variant])
+        if (themes_root / "gh-dash-theme").exists():
+            outputs[themes_root / "gh-dash-theme" / f"{name}.yml"] = render_gh_dash(palettes[variant])
+        if (themes_root / "starship-theme").exists():
+            outputs[themes_root / "starship-theme" / f"{name}.toml"] = render_starship(name, palettes[variant])
+        if (themes_root / "ghostty-theme").exists():
+            outputs[themes_root / "ghostty-theme" / name] = render_ghostty(palettes[variant], variant == "light")
 
     helix_files = {
         "version14-dark.toml": ("dark",),
