@@ -32,7 +32,7 @@ regeneration command.
 
 To automatically rerun theme checks after a token update, configure a
 `VERSION14_DISPATCH_TOKEN` secret on this repository. It must be a fine-grained
-token with Actions: write access to the nine Version 14 theme repositories.
+token with Contents: write access to the nine Version 14 theme repositories.
 The dispatch workflow emits a warning and skips reruns when this secret is not
 configured; it does not make token validation fail.
 
