@@ -37,6 +37,21 @@ and runs on pushes, pull requests, manual dispatches, and weekly.
 The transparent Helix variant uses the dark semantic palette and only changes
 which UI surfaces are painted by Helix.
 
+## Intentional per-file overrides
+
+Comment-capable theme files may declare a narrow override:
+
+```toml
+# version14-override: palette.sel_primary = "#3A3650"
+sel_primary = "#3A3650"
+```
+
+The generator applies the override only to the named assignment and continues
+checking every other generated value. This is useful for tool-specific visual
+choices, such as a Helix selection color that intentionally follows Zed's
+visual treatment. An override must be explicit and must match an assignment in
+the same file.
+
 ## Supported repositories
 
 Atuin, gh-dash, Ghostty, Helix, Neovim, Starship, Vim, VS Code, and Zed.
