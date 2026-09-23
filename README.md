@@ -26,7 +26,15 @@ foreground, background, accent, syntax, and ANSI colors come from this file.
 The reusable CI workflow is available at
 templates/theme-repository/.github/workflows/check-tokens.yml.
 It checks out the current token source, runs the generator in verification mode,
-and runs on pushes, pull requests, manual dispatches, and weekly.
+and runs on pushes, pull requests, token-update dispatches, manual dispatches,
+and weekly. On failure it identifies the stale files and prints the exact
+regeneration command.
+
+To automatically rerun theme checks after a token update, configure a
+`VERSION14_DISPATCH_TOKEN` secret on this repository. It must be a fine-grained
+token with Contents: write access to the nine Version 14 theme repositories.
+The dispatch workflow emits a warning and skips reruns when this secret is not
+configured; it does not make token validation fail.
 
 ## Variants
 
