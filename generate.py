@@ -14,6 +14,9 @@ import tomllib
 
 ROOT = Path(__file__).resolve().parent
 VARIANTS = ("dark", "black", "light")
+OVERRIDE_RE = re.compile(
+    r'version14-override:\s*([A-Za-z0-9_.-]+)\s*=\s*["\'](#[0-9A-Fa-f]{6,8})["\']'
+)
 
 
 def load_tokens() -> dict[str, dict[str, str]]:
@@ -144,6 +147,20 @@ def replace_semantic_colors(text: str, variants: Iterable[str], palettes: dict[s
     return pattern.sub(lambda match: replacements[match.group(0)], text)
 
 
+def apply_overrides(generated: str, source: str) -> str:
+    """Apply explicit per-file palette overrides declared in source comments."""
+    for path, color in OVERRIDE_RE.findall(source):
+        key = path.rsplit(".", 1)[-1]
+        assignment = re.compile(
+            rf'(^\s*{re.escape(key)}\s*=\s*["\'])(#[0-9A-Fa-f]{{6,8}})(["\']\s*(?:#.*)?$)',
+            re.MULTILINE,
+        )
+        generated, count = assignment.subn(rf"\g<1>{color}\g<3>", generated)
+        if count == 0:
+            raise ValueError(f"override {path} did not match an assignment in the target file")
+    return generated
+
+
 def replace_nvim_palette(text: str, palettes: dict[str, dict[str, str]]) -> str:
     boundaries = [
         ("M.dark = {", "M.black = {", "dark"),
@@ -238,7 +255,11 @@ def process(themes_root: Path, write: bool) -> list[str]:
     for filename, variants in helix_files.items():
         source = themes_root / "helix-theme" / filename
         if source.exists():
-            outputs[source] = replace_semantic_colors(source.read_text(), variants, palettes)
+            source_text = source.read_text()
+            outputs[source] = apply_overrides(
+                replace_semantic_colors(source_text, variants, palettes),
+                source_text,
+            )
 
     nvim = themes_root / "nvim-theme" / "lua/version14/palette.lua"
     if nvim.exists():
